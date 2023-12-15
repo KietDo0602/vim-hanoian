@@ -2,13 +2,40 @@
 
 local api = vim.api
 
+local buf
+local win
+
 local global_line_number = 0
 local global_column_number = 0
 local temp_buf = nil
+local old_before_win = nil
+local buf_name = nil
 
-local function store_current_buffer_info()
-	print("store")
+local pathData = nil
+
+
+
+local function close_window()
+	-- Delete buffer containing the Hanoian Menu
+	if buf and api.nvim_buf_is_valid(buf) then
+		api.nvim_buf_delete(buf, { force = true })
+	end
+
+	-- Return to the old window before
+	if old_before_win ~= nil then
+		api.nvim_set_current_win(old_before_win)
+		api.nvim_win_set_cursor(old_before_win, {global_line_number, global_column_number})
+	end
+
+	old_before_win = nil
+	win = nil
+	buf = nil
+	temp_buf = nil
+	global_line_number = nil
+	global_column_number = nil
+	buf_name = nil
 end
+
 
 
 local function Return_Menu_Data()
@@ -31,33 +58,53 @@ local function Return_Menu_Data()
 
 		local rootDirectory = services.getProjectRoot(decodedJson, pathsArr)
 
-		local allChildren = services.getChildren(rootDirectory)
+		local allChildren = services.getChildren(rootDirectory.res, rootDirectory.rootPath)
+
+		file:close()
 
 		return allChildren
 	else
+		local newFile = io.open(path, 'w')
+
+		if newFile then
+			local initialContent = {
+				paths = {},
+				settings = {}
+			}
+			local final_json = vim.json.encode(initialContent)
+			newFile:write(final_json)
+			newFile:close()
+			-- Retry after creating json file
+			file:close()
+		else
+			print("Unable to create file at " .. path)
+		end
+
 		return nil
 	end
 end
  
 
 local function open_window()
+  old_before_win = api.nvim_get_current_win()
+  temp_buf = api.nvim_get_current_buf()
+  local buf_info = vim.fn.getbufinfo(temp_buf)
 
-  temp_buf = vim.api.nvim_get_current_buf()
-  -- Get the buffer's information
-  local buf_name = vim.api.nvim_buf_get_name(temp_buf)
-  local buf_path = vim.fn.fnamemodify(buf_name, ':p')
+  if #buf_info >= 1 then
+	  buf_name = buf_info[1].name
+	  global_line_number = buf_info[1].lnum
+	  global_column_number = 1
+  end
 
-  -- Get current cursor position (line number and column)
-  local cursor_pos = vim.api.nvim_win_get_cursor(0)
-  global_line_number = cursor_pos[1]
-  global_column_number = cursor_pos[2]
-
+  -- Get the current buffer's information before opening a new one
   buf = api.nvim_create_buf(false, true)
 
   local border_buf = api.nvim_create_buf(false, true)
 
   api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
-  api.nvim_buf_set_option(buf, 'filetype', 'whid')
+  api.nvim_buf_set_option(buf, 'filetype', 'hanoian')
+  api.nvim_buf_set_option(buf, "buftype", "acwrite")
+  api.nvim_buf_set_option(buf, "bufhidden", "delete")
 
   local width = api.nvim_get_option("columns")
   local height = api.nvim_get_option("lines")
@@ -85,11 +132,14 @@ local function open_window()
     col = col,
   }
 
-  local border_lines = { '╭' .. string.rep('─', win_width) .. '╮' }
+  local new_width = (win_width - 7) / 2
+  local border_lines = { '╭' .. string.rep('─', new_width) .. "Hanoian" .. string.rep('─',  new_width + 1) .. '╮' }
   local middle_line = '│' .. string.rep(' ', win_width) .. '│'
+
   for i=1, win_height do
     table.insert(border_lines, middle_line)
   end
+
   table.insert(border_lines, '╰' .. string.rep('─', win_width) .. '╯')
   api.nvim_buf_set_lines(border_buf, 0, -1, false, border_lines)
 
@@ -98,30 +148,39 @@ local function open_window()
   api.nvim_command('au BufWipeout <buffer> exe "silent bwipeout! "' .. border_buf)
 
   api.nvim_win_set_option(win, 'cursorline', true) -- it highlight line with the cursor on it
-
-  -- Set Title of the Window
-  api.nvim_buf_set_lines(buf, 0, -1, false, { services.center('Hanoian'), '', ''})
+  api.nvim_win_set_option(win, "number", true)
 
   -- Add directory to the menu
-  local childrenContentObject = Return_Menu_Data()
+  pathData = Return_Menu_Data()
+  local childrenContentObject = pathData
 
   for i, value in ipairs(childrenContentObject) do
-	api.nvim_buf_set_lines(buf, i + 1, -1, false, { value })
+	api.nvim_buf_set_lines(buf, i - 1, -1, false, { value.name })
   end
 
   -- api.nvim_buf_add_highlight(buf, -1, 'HanoianHeader', 0, 0, -1)
-  api.nvim_buf_set_keymap(buf, 'n', '<ESC>', '<Cmd>lua require("hanoian").close_window()<CR>', { silent = true })
+  api.nvim_buf_set_keymap(buf, 'n', '<ESC>', '<Cmd>lua require("hanoian").hanoian()<CR>', { silent = true })
+  api.nvim_buf_set_keymap(buf, 'n', '<CR>', ":lua require'hanoian'.open_file()<CR>", {
+	silent = true,
+	nowait = true
+  })
+  print("Open Hanoian Menu!")
+end
+
+local function open_file()
+	-- Get file selected by the user
+	local current_column = vim.fn.line(".")
+	local pathToFile = pathData[current_column].path
+	local fileName = pathData[current_column].name 
+	local fullFilePath = pathToFile .. '/' .. fileName
+
+	local currentBuffer = services.create_buffer(fullFilePath)
+	close_window()
+	api.nvim_set_current_buf(currentBuffer)
+	print('Editing ' .. fileName)
 end
 
 
-
-local function close_window()
-	api.nvim_win_close(win, true)
-	vim.cmd('buffer ' .. temp_buf)
-	vim.api.nvim_win_set_cursor(0, {global_line_number, global_column_number})
-	buf = nil
-	win = nil
-end
 
 -- Set current directory as project root
 local function set_project_root()
@@ -142,8 +201,8 @@ local function set_project_root()
 		local json = decodedJson.paths
 
 		local current = json
-		for value in ipairs(pathsArr) do
-			if current[value] == nill then
+		for index, value in ipairs(pathsArr) do
+			if current[value] == nil then
 				current[value] = {}
 			end
 			current = current[value]
@@ -159,11 +218,11 @@ local function set_project_root()
 end
 
 local function hanoian()
-	if win == nil then
-		open_window()
-	else
+	if win and api.nvim_win_is_valid(win) then
 		close_window()
+		return
 	end
+	open_window()
 end
 
 
@@ -203,7 +262,7 @@ local function add_directory()
 
 		local current = json.paths
 		for i, path in ipairs(pathsArr) do
-			if current[path] == nill then
+			if current[path] == nil then
 				current[path] = {}
 			end
 
@@ -249,12 +308,10 @@ local function add_directory()
 			file:close()
 			add_directory()
 		else
-			print("Unable to create file. There are no folder called nvim-data in " .. path)
+			print("Unable to create file at " .. path)
 		end
 	end
 end
-
-
 
 return {
 	hanoian = hanoian,
@@ -262,5 +319,6 @@ return {
 	close_window = close_window,
 	add_directory = add_directory,
 	set_project_root = set_project_root,
+	open_file = open_file,
 }
 
