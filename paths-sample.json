@@ -1,0 +1,49 @@
+{
+	"paths": {
+		"C:": {
+			"\\files": [
+				{
+					"Video.mp4": {
+						"marker": 2032,
+						"notes": "fjekfjkelsajfkljesf"
+					}
+				}
+			]
+		},
+		"D:": {
+			"ProjectFolder": {
+				"\\projectRoot": true,
+				"\\files": [
+					{
+						"FirstComponent.tsx": {
+							"marker": "23,232",
+							"notes": "fjekfjkelsajfkljesf"
+						}
+					}
+				],
+				"FirstComponent": {
+					"\\files": [
+						{
+							"FirstComponent.tsx": {
+								"marker": "23,232",
+								"notes": "fjekfjkelsajfkljesf"
+							}
+						},
+						{
+							"SecondComponent.tsx": {
+								"marker": "23,232",
+								"notes": "fjekfjkelsajfkljesf"
+							}
+						}
+					]
+				}
+			}
+		}
+	}, 
+	"settings": {
+		"enableNotes": true,
+		"displayFileNameOnly": true,
+		"enableEditFileNameDuringUse": true,
+		"createNewFileOnMissing": true
+	}
+}
