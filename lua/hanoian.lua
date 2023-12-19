@@ -45,47 +45,23 @@ local function Return_Menu_Data()
 	local currentFilePath = vim.fn.expand('%:p:h')
 	local currentFileName = vim.fn.expand('%:p:t')
 
-	local pathsArr = {}
-	for substring in currentFilePath:gmatch("[^\\]+") do
-		table.insert(pathsArr, substring)
+	-- Extract each folder from file path and add to table
+	local pathsTable = services.pathToTable(currentFilePath)
+
+	-- Get current json content inside hanoi.json
+	local json = services.getHanoiJSON()
+
+	-- Create new hanoi.json if an error occured opening the json
+	if json == nil then
+		return services.writeToEmptyJSONFile()
 	end
 
-	local path = vim.fn.expand('~/hanoi.json')
-	local file = io.open(path, 'r')
-	
-	if file then
-		local jsonFileContent = file:read('*a')
-		
-		local decodedJson = vim.json.decode(jsonFileContent).paths
+	-- Get the json object of the root directory
+	local rootDirectoryJSON = services.getProjectRoot(json.paths, pathsTable)
+	-- Get all of the files inside root directory json
+	local res = services.getChildren(rootDirectoryJSON)
 
-		local rootDirectory = services.getProjectRoot(decodedJson, pathsArr)
-
-		local allChildren = services.getChildren(rootDirectory)
-
-		file:close()
-
-		return allChildren
-	else
-		local newFile = io.open(path, 'w')
-		if newFile then
-			local initialContent = {
-				paths = {},
-				settings = {}
-			}
-			initialContent.paths["\\projectRoot"] = "true"
-			local final_json = vim.json.encode(initialContent)
-			newFile:write(final_json)
-			newFile:close()
-			-- Retry after creating json file
-			if file then
-				file:close()
-			end
-			return Return_Menu_Data()
-		else
-			print("Unable to create file at " .. path)
-		end
-	end
-	return nil
+	return res
 end
  
 
@@ -203,46 +179,43 @@ end
 -- Set current directory as project root
 local function set_project_root()
 	local directory_path = vim.fn.getcwd()
+	local path = vim.fn.expand('~/hanoi.json')
 
-	local pathsArr = {}
-	for substring in directory_path:gmatch("[^\\]+") do
-		table.insert(pathsArr, substring)
+	local pathsTable = services.pathToTable(directory_path)
+
+	-- Get current json content inside hanoi.json
+	local json = services.getHanoiJSON()
+
+	-- Create new hanoi.json if an error occured opening the json
+	if json == nil then
+		return services.writeToEmptyJSONFile()
 	end
 
-	local path = vim.fn.expand('~/hanoi.json')
-	local file = io.open(path, 'r')
-	
-	if file then
-		local jsonFileContent = file:read('*a')
-		
-		local decodedJson = vim.json.decode(jsonFileContent)
-		local json = decodedJson.paths
-
-		local current = json
-		for index, value in ipairs(pathsArr) do
-			if current[value] == nil then
-				current[value] = {}
-			elseif index == #pathsArr - 1 then
-				current["\\projectRoot"] = "true"
-				local encoded_json = vim.json.encode(decodedJson) 
-				local final_file = io.open(path, 'w')
-				final_file:write(encoded_json)
-				final_file:close()
-				print(directory_path .. " added as project root!")
-				return
-			end
+	local current = json.paths
+	for index, value in ipairs(pathsTable) do
+		if current[value] == nil then
+			current[value] = {}
+		elseif index == #pathsTable then
 			current = current[value]
-		end
-		if current ~= nil then
 			current["\\projectRoot"] = "true"
-			local encoded_json = vim.json.encode(decodedJson) 
+			local encoded_json = vim.json.encode(json) 
 			local final_file = io.open(path, 'w')
 			final_file:write(encoded_json)
 			final_file:close()
 			print(directory_path .. " added as project root!")
+			return
 		end
-		print('Error adding ' .. directory_path .. ' as project root :(')
+		current = current[value]
 	end
+	if current ~= nil then
+		current["\\projectRoot"] = "true"
+		local encoded_json = vim.json.encode(json) 
+		local final_file = io.open(path, 'w')
+		final_file:write(encoded_json)
+		final_file:close()
+		print(directory_path .. " added as project root!!")
+	end
+	print('Error adding ' .. directory_path .. ' as project root :(')
 end
 
 
@@ -347,7 +320,6 @@ local function add_directory()
 	end
 end
 
-
 return {
 	hanoian = hanoian,
 	open_window = open_window,
@@ -355,5 +327,6 @@ return {
 	add_directory = add_directory,
 	set_project_root = set_project_root,
 	open_file = open_file,
+	getSettings=getSettings
 }
 

@@ -9,6 +9,7 @@ local DEFAULT_SETTING = {
 }
 
 local function hanoi_exists()
+	local path = vin.fn.expand(HANOI_FILE_PATH)
 	local config_dir = vim.fn.stdpath('config')
 	local init_lua_path = config_dir .. '/hanoi.json'
 
@@ -114,26 +115,50 @@ local function create_buffer(file)
     return vim.fn.bufadd(file)
 end
 
--- Fetch settings from hanoi.json file
-local function fetchSettings()
-	local path = vin.fn.expand(HANOI_FILE_PATH)
+
+local function pathToTable(path)
+	if path == '' then
+		return nil
+	end
+
+	local res = {}
+	for substring in path:gmatch("[^\\]+") do
+		table.insert(res, substring)
+	end
+
+	return res
+end
+
+
+-- Fetch json from hanoi.json file
+local function getHanoiJSON()
+	local path = vim.fn.expand(HANOI_FILE_PATH)
 	local file = io.open(path, 'r')
 	local content = file:read('*a')
-	json = vim.json.decode(content) 
 
-	return json.settings
+	local success, json = pcall(vim.json.decode, content)
+
+	if success then
+		-- If the decoding was successful, use it
+		return json
+	end
+
+	return nil
 end
 
 -- Reset all of the data inside hanoi.json file
-local function resetJSONFile()
-	local path = vim.fn.expand(HANOI_FILE_PATH)
+local function writeToEmptyJSONFile()
 	local res = {
 		path = {},
 		settings = DEFAULT_SETTING
 	}
+	res.path['\\projectRoot'] = "true"
+
+	local path = vim.fn.expand(HANOI_FILE_PATH)
 	local write_file = io.open(path, 'w')
 	write_file:write(encoded_json)
 	write_file:close()
+
 	return res
 end
 
@@ -144,4 +169,7 @@ return {
 	getProjectRoot = getProjectRoot,
 	getChildren = getChildren,
 	create_buffer = create_buffer,
+	getHanoiJSON = getHanoiJSON,
+	writeToEmptyJSONFile = writeToEmptyJSONFile,
+	pathToTable = pathToTable,
 }
