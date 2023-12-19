@@ -136,13 +136,8 @@ local function open_window()
 
   if childrenContentObject ~= nil and #childrenContentObject >= 1 then
 	  for i, value in ipairs(childrenContentObject) do
-		local displayName = ''
-		if value.displayName ~= nil then
-			displayName = value.displayName .. '/' .. value.name
-		end
-
-		-- api.nvim_buf_set_lines(buf, i - 1, -1, false, { value.path .. '/' .. value.name })
-		api.nvim_buf_set_lines(buf, i - 1, -1, false, { displayName })
+		local item_display_text = value.relativeFilePath
+		api.nvim_buf_set_lines(buf, i - 1, -1, false, { item_display_text })
 	  end
   end
 
@@ -163,9 +158,8 @@ end
 local function open_file()
 	-- Get file selected by the user
 	local current_column = vim.fn.line(".")
-	local pathToFile = pathData[current_column].path
-	local fileName = pathData[current_column].name 
-	local fullFilePath = pathData[current_column].fullPath
+	local fileName = pathData[current_column].fileName 
+	local fullFilePath = pathData[current_column].fullFilePath
 
 	local currentBuffer = services.create_buffer(fullFilePath)
 	close_window()
@@ -214,6 +208,7 @@ local function set_project_root()
 		final_file:write(encoded_json)
 		final_file:close()
 		print(directory_path .. " added as project root!!")
+		return
 	end
 	print('Error adding ' .. directory_path .. ' as project root :(')
 end

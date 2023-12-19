@@ -37,26 +37,32 @@ local function getChildren(obj)
 	end
 
     local keys = {}
-    local function extractFilesKeys(data, path, displayName)
+	local relativePathString = ''
+    local function extractFilesKeys(data, fullPath, relativePath)
         for key, value in pairs(data) do
             if key == "\\files" then
 				for k, v in pairs(value) do
+					local tempRelativePath = k
+					if relativePath ~= '' then
+						tempRelativePath = relativePath .. '/' .. k
+					end
+
 					local temp = {
-						name = k,
-						path = path,
-						fullPath = path .. '/' .. k,
-						displayName = displayName
+						fileName = k,
+						relativeFilePath = tempRelativePath,
+						fullFilePath = fullPath .. '/' .. k
 					}
 					table.insert(keys, temp)
 				end
             elseif type(value) == "table" then
-				local temp_path = path .. '/' .. key
-				if displayName ~= '' then
-					displayName = displayName .. '/' .. key
-				else
-					displayName = key
+				local tempFullPath = fullPath .. '/' .. key
+
+				local tempRelativePath = key
+				if relativePath ~= '' then
+					tempRelativePath = relativePath .. '/' .. key
 				end
-                extractFilesKeys(value, temp_path, displayName)
+
+                extractFilesKeys(value, tempFullPath, tempRelativePath)
             end
         end
     end
@@ -82,6 +88,7 @@ local function getProjectRoot(jsonObj, keysArray)
 		else
 			rootPath = rootPath .. '/' .. key
 		end
+
         if current == nil then
             break
 		elseif current['\\projectRoot'] then
