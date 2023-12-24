@@ -26,7 +26,7 @@ end
 local function center(str)
   local width = api.nvim_win_get_width(0)
   local shift = math.floor(width / 2) - math.floor(string.len(str) / 2)
-  return string.rep(' ', shift) .. str
+  return string.rep('─', shift) .. str .. string.rep('─', shift) 
 end
 
 
@@ -38,6 +38,7 @@ local function getChildren(obj)
 
     local keys = {}
 	local relativePathString = ''
+
     local function extractFilesKeys(data, fullPath, relativePath)
         for key, value in pairs(data) do
             if key == "\\files" then
@@ -74,12 +75,14 @@ end
 
 
 -- Get the deepest parent that is a projectRoot
-local function getProjectRoot(jsonObj, keysArray)
-    local current = jsonObj
+local function getProjectRoot(json, keysArray)
+    local current = json
 	local res = nil
 
 	local rootPath = ''
 	local pathRes
+	local rootFolderName = nil
+	local temp_name = nil
 
     -- Traverse through the JSON object using the keys
     for i, key in ipairs(keysArray) do
@@ -94,20 +97,23 @@ local function getProjectRoot(jsonObj, keysArray)
 		elseif current['\\projectRoot'] then
 			res = current[key]
 			pathRes = rootPath
-			current = current[key]
-		else
-			current = current[key]
+			rootFolderName = key
         end
+
+		current = current[key]
+		temp_name = key
     end
 	if current and current['\\projectRoot'] then
 		res = current
 		pathRes = rootPath
+		rootFolderName = temp_name
 	end
 	-- Return the json key path with projectRoot=true that is the closest parent to the children file,
 	-- alongside the absolute path of the project root
 	return {
 		rootPath = pathRes,
-		res = res
+		res = res,
+		name = rootFolderName
 	}
 end
 
@@ -170,6 +176,42 @@ local function writeToEmptyJSONFile()
 end
 
 
+local function getAllRootFolder(json)
+    local roots = {}
+
+    local function getRootHelper(data, fullPath)
+        for key, value in pairs(data) do
+            if value and value['\\projectRoot'] then
+				local tempFullPath = fullPath .. '/' .. key
+				if fullPath == '' then
+					tempFullPath = key
+				end
+
+				local elem = {
+					name = key,
+					path = tempFullPath
+				}
+				table.insert(roots, elem)
+			end
+
+            if type(value) == "table" and key ~= "\\files"  then
+				local tempFullPath = fullPath .. '/' .. key
+				if fullPath == '' then
+					tempFullPath = key
+				end
+				getRootHelper(value, tempFullPath)
+            end
+        end
+    end
+
+	getRootHelper(json, '')
+
+	return roots
+end
+
+
+
+
 return {
 	hanoi_exists = hanoi_exists,
 	center = center,
@@ -179,4 +221,5 @@ return {
 	getHanoiJSON = getHanoiJSON,
 	writeToEmptyJSONFile = writeToEmptyJSONFile,
 	pathToTable = pathToTable,
+	getAllRootFolder = getAllRootFolder,
 }
