@@ -8,6 +8,7 @@ local DEFAULT_SETTING = {
 	createMissingFile = "true"
 }
 
+
 function hanoi_exists()
 	local path = vin.fn.expand(HANOI_FILE_PATH)
 	local config_dir = vim.fn.stdpath('config')

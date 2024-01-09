@@ -159,8 +159,6 @@ local function create_new_hanoian_window(hanoi_type, old_win_info, bottom_text)
 end
 
 
-
-
 local function displayFolders(folders, indent)
     indent = indent or 0
     local spaces = string.rep("  ", indent)

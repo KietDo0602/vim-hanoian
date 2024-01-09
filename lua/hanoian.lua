@@ -4,44 +4,7 @@ local ui = require('ui-services')
 
 local api = vim.api
 
-local buf
-local win
-
-local temp_buf = nil
-local global_line_number = 0
-local global_column_number = 0
-
-local old_before_win = nil
-local buf_name = nil
-
-local pathData = nil
 local cursorWindowIndex = 1
-
-function close_window()
-	-- Delete window containing the Hanoian Menu
-	if win and api.nvim_win_is_valid(win) then
-		api.nvim_win_close(win, true)
-	end
-
-	-- Delete buffer containing the Hanoian Menu
-	if buf and api.nvim_buf_is_valid(buf) then
-		api.nvim_buf_delete(buf, { force = true })
-	end
-
-	-- Return to the old window
-	if old_before_win ~= nil then
-		api.nvim_set_current_win(old_before_win)
-		api.nvim_win_set_cursor(old_before_win, {global_line_number, global_column_number})
-	end
-
-	old_before_win = nil
-	win = nil
-	buf = nil
-	temp_buf = nil
-	global_line_number = nil
-	global_column_number = nil
-	buf_name = nil
-end
 
  
 local hanoi = nil
@@ -137,6 +100,7 @@ function open_window()
 end
 
 
+-- Toggle Hanoi.Files Menu
 function hanoi_toggle_file()
 	if hanoi == nil then
 		set_project_root()
@@ -149,12 +113,14 @@ function hanoi_toggle_file()
 end
 
 
--- Set current directory as project root
+-- Set current cwd as project root
 function set_project_root(filePath, printLog)
 	filePath = filePath or nil
+
 	if filePath ~= nil then
 		filePath = filePath:gsub('/', '\\')
 	end
+
 	local directory_path = filePath or vim.fn.getcwd()
 	local path = vim.fn.expand('~/hanoi.json')
 
@@ -205,6 +171,7 @@ end
 
 
 
+-- Add file
 function add_file()
 	local currentFilePath = vim.fn.expand('%:p:h')
 	local currentFileName = vim.fn.expand('%:p:t')
@@ -312,11 +279,9 @@ end
 return {
 	hanoi_toggle_file=hanoi_toggle_file,
 	open_window = open_window,
-	close_window = close_window,
 	add_file = add_file,
 	set_project_root = set_project_root,
 	open_file = open_file,
-	getSettings = getSettings,
 	open_projects_window = open_projects_window,
 }
 
