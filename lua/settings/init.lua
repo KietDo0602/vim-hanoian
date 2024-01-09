@@ -15,20 +15,17 @@ local DEFAULT_SETTING = {
 -- 3. File name only (example: file.txt)
 local function GetDisplayPathType()
 	local json = services.getHanoiJSON()
-	if json == nil or json.settings == nil then
-		return 1
-	end
 
-	if json.settings.MenuDisplayType ~= nil then
-		return json.settings.MenuDisplayType
+	if json and json.settings and json.settings.menuDisplayType then
+		return json.settings.menuDisplayType
 	end
 
 	return 1
 end
 
-
-
-
+function setDisplayPathType(num)
+	local json = services.getHanoiJSON()
+end
 
 return {
 	GetDisplayPathType = GetDisplayPathType,

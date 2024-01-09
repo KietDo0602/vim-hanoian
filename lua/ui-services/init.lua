@@ -11,7 +11,7 @@ local CHAR_BR = '╯'
 
 
 function center(str, width, top)
-  if str == nil then
+  if str == nil or str == '' then
 	 str = ''
   end
 
@@ -43,6 +43,12 @@ end
 
 -- Close window and buffer if it exists
 local function close_window(win, buf, old_win, line, column)
+	win = win or nil
+	buf = buf or nil
+	old_win = old_win or nil
+	line = line or nil
+	column = column or nil
+
 	-- Delete if window is valid
 	if win and api.nvim_win_is_valid(win) then
 		api.nvim_win_close(win, true)
@@ -61,20 +67,22 @@ local function close_window(win, buf, old_win, line, column)
 end
 
 
-local function open_file(table, file)
+local function open_file(data, index)
 	local selectedOption = vim.fn.line(".")
 end
 
 
-local function create_new_hanoian_window(hanoi_type, old_win_info)
+local function create_new_hanoian_window(hanoi_type, old_win_info, bottom_text)
+  bottom_text = bottom_text or nil
+
   local buf = api.nvim_create_buf(false, true)
 
   local border_buf = api.nvim_create_buf(false, true)
 
   api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
   api.nvim_buf_set_option(buf, 'filetype', 'nvim-oldfile')
-  -- api.nvim_buf_set_option(buf, "buftype", "acwrite")
-  -- api.nvim_buf_set_option(buf, "bufhidden", "delete")
+  api.nvim_buf_set_option(buf, "buftype", "acwrite")
+  api.nvim_buf_set_option(buf, "bufhidden", "delete")
 
 
   local width = api.nvim_get_option("columns")
@@ -103,7 +111,8 @@ local function create_new_hanoian_window(hanoi_type, old_win_info)
     col = col,
   }
 
-  local border_lines = { center('Hanoian' .. hanoi_type, win_width + 2, true) }
+  -- local border_lines = { center('Hanoian' .. hanoi_type, win_width + 2, true) }
+  local border_lines = { center(bottom_text, win_width + 2, true) }
   local middle_line = '│' .. string.rep(' ', win_width) .. '│'
 
   for i=1, win_height do
@@ -131,7 +140,7 @@ local function create_new_hanoian_window(hanoi_type, old_win_info)
 
   api.nvim_command('au BufWipeout <buffer> exe "silent bwipeout! "' .. border_buf)
 
-  table.insert(border_lines, center(rootDirectoryName, win_width + 2, false))
+  table.insert(border_lines, center('Hanoian' .. hanoi_type, win_width + 2, false))
   api.nvim_buf_set_lines(border_buf, 0, -1, false, border_lines)
 
   -- api.nvim_buf_set_option(buf, 'modifiable', false)
@@ -140,10 +149,8 @@ local function create_new_hanoian_window(hanoi_type, old_win_info)
   -- api.nvim_win_set_cursor(0, {1, 1})
 
 
-  vim.keymap.set('n', '<ESC>', function() close_window(win, buf, old_win_info) end, { buffer = true, silent = true })
   vim.keymap.set('n', '<LeftMouse>', function() close_window(win, buf, old_win_info) end, { buffer = true, silent = true })
 
-  vim.keymap.set('n', '<CR>', function() open_file() end, { buffer = true, silent = true })
 
   return {
 	  buffer = buf,
@@ -167,6 +174,8 @@ local function displayFolders(folders, indent)
         end
     end
 end
+
+
 
 return {
 	center = center,

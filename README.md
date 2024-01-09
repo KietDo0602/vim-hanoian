@@ -3,30 +3,54 @@
 Inspired by Harpoon from ThePrimeagen
 
 
-# Functionality
+## Installation
+Use vim-plug or other alternatives to install hanoian
+
+Plug 'kietdo0602/vim-hanoian'
+
+
+
+## Guide 
+
+':Hanoian.Files' - toggle Hanoian.Files Menu Window
+':Hanoian.Files.Add' - Add current file to current project in cwd
+
+':Hanoian.Projects' - toggle Hanoian.Projects Menu
+':Hanoian.Projects.Add' - Add current cwd as a new Hanoian.Projects
+
+':Hanoian.Notes' - toggle Hanoian.Notes Menu
+':Hanoian.Notes.Edit' - Open note content of current file
+
+
+
+## Explanation
+
+### Hanoi.Files
+
+Hanoi.Files Menu contain all of the files stored in the project 
+Add and Jump between files easily with menu
+
+By default, when adding a new file, it will use the cwd as the root of the projects
+
+### Hanoi.Projects
+
+Hanoi.Projects contain all global projects stored on your machine
+
+### Hanoi.Notes
+
+For each file added to the Hanoi.Files, you can add notes file to it.
+
+Edit the note of each file and save them.
+
+
+
+## Cusomization
+To customize settings, change content of the settings key of json inside '~/hanoi.json'
+
+
+
+## Implementation
+All contents are stored within hanoi.json file
 1. Allow storing files paths and jumping around
 2. Each file has a note - txt or json - txt now only
-
-
-# Toggle Menu - Open / Close Menu
-## If hanoi.json doesn't exist, create new file and add new empty json object to it {paths: {}, settings: {}}
-## Get current file path of where the user is C:\Documents\folder\text.txt. 
-## Parse through json C: -> Documents -> folder. If during parse any of these folder it doesn't exist, return empty.
-## If the user is in /folder/text.txt, display all of the files inside folder AND children of folder.
-## Display it on the screen
-
-
-# Get path of my current file (e.g. D:/Videos/avengers.mp4)
-## Parse through json D: -> Videos. If during parse any of these folder it doesn't exist, create new folder and move into them.
-## If the file already exists, don't write anything. Else, add it to json.
-## Let the user know we have added it to json.
-
-
-## Open notes of current file
-## Get path of my current file (e.g. D:/Videos/avengers.mp4)
-## Parse through json D: -> Videos. If during parse any of these folder it doesn't exist, create new folder and move into them.
-## Load up the notes file if it exists. If not, load up blank notes page.
-
-## Check if init.lua in .config/nvim exists or not
-
 
