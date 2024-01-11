@@ -1,10 +1,13 @@
-# Hanoian - File Jumping Library
+# Hanoian - File Navigation and Project Management Library
 Inspired by Harpoon by ThePrimeagen
 
 
 ## Features:
+
 **Navigate** between files within a project **(Hanoi.Files)**
+
 **Switch** projects easily **(Hanoi.Projects)**
+
 **Notes** for every files **(Hanoi.Notes)**
 
 
@@ -17,17 +20,17 @@ Plug 'kietdo0602/vim-hanoian'
 
 
 ## Commands 
-':Hanoian.Files' - Toggle Hanoian.Files Menu
-':Hanoian.Files.Add' - Add current file
-':Hanoian.Files.Remove' - Remove current file
+':HanoianFiles' - Toggle Hanoian.Files Menu
+':HanoianFilesAdd' - Add current file
+':HanoianFilesRemove' - Remove current file
 
-':Hanoian.Projects' - Toggle Hanoian.Projects Menu
-':Hanoian.Projects.Add' - Make current cwd as new Hanoian.Project
-':Hanoian.Projects.Remove' - Remove current cwd 
+':HanoianProjects' - Toggle Hanoian.Projects Menu
+':HanoianProjectsAdd' - Make current cwd as new Hanoian.Project
+':HanoianProjectsRemove' - Remove current cwd 
 
-':Hanoian.Notes' - toggle Hanoian.Notes Menu
-':Hanoian.Notes.Edit' - Open note notes of current file
-':Hanoian.Notes.Delete' - Delete all notes of current file
+':HanoianNotes' - toggle Hanoian.Notes Menu
+':HanoianNotesEdit' - Open note notes of current file
+':HanoianNotesDelete' - Delete all notes of current file
 
 
 ## Explanation
