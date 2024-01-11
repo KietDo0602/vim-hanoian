@@ -1,14 +1,14 @@
-# Hanoian - File Navigation and Project Management Library
+# vim-hanoian - File Navigation and Project Management Library
 Inspired by Harpoon by ThePrimeagen
 
 
 ## Features:
 
-**Navigate** between files within a project **(Hanoi.Files)**
+**Navigate** between files within a project **(HanoiFiles)**
 
-**Switch** projects easily **(Hanoi.Projects)**
+**Switch** projects easily **(HanoiProjects)**
 
-**Notes** for every files **(Hanoi.Notes)**
+**Notes** for every files **(HanoiNotes)**
 
 
 ## Installation
@@ -63,4 +63,7 @@ All files the user are stored within hanoi.json file
 
 1. Allow storing files paths and jumping around
 2. Each file has a note - txt or json - txt now only
+
+## In-progress
+- HanoiNotes
 
