@@ -1,13 +1,17 @@
+local api = vim.api
+
 local services = require('services')
 local settings = require('settings')
 local ui = require('ui-services')
 
-local api = vim.api
 
 local cursorWindowIndex = 1
 
- 
 local hanoi = nil
+
+local currentRoot = nil
+
+
 -- Open file at the curent line number that the cursor is on
 function open_file(data, hanoian, old_win_info)
 	-- Get file selected by the user
@@ -33,7 +37,7 @@ function open_file(data, hanoian, old_win_info)
 	print('Opening ' .. fileName)
 end
 
-local currentRoot = nil
+
 -- Open Menu containing all of the files in project root
 function open_window()
 	local old_win = api.nvim_get_current_win()
@@ -103,7 +107,7 @@ end
 -- Toggle Hanoi.Files Menu
 function hanoi_toggle_file()
 	if hanoi == nil then
-		set_project_root()
+		set_project_root(nil, false)
 		hanoi = open_window()
 		return
 	end
@@ -116,6 +120,7 @@ end
 -- Set current cwd as project root
 function set_project_root(filePath, printLog)
 	filePath = filePath or nil
+	printLog = printLog or false
 
 	if filePath ~= nil then
 		filePath = filePath:gsub('/', '\\')
@@ -170,7 +175,6 @@ function set_project_root(filePath, printLog)
 end
 
 
-
 -- Add file
 function add_file()
 	local currentFilePath = vim.fn.expand('%:p:h')
@@ -192,7 +196,6 @@ function add_file()
 	local current = json.paths
 
 	for i, folder in ipairs(pathsArr) do
-		print(folder)
 		if current and current[folder] == nil then
 			current[folder] = {}
 		end
@@ -230,6 +233,58 @@ function add_file()
 	final_file:close()
 end
 
+
+-- Remove file
+function remove_file()
+	local currentFilePath = vim.fn.expand('%:p:h')
+	local currentFileName = vim.fn.expand('%:p:t')
+
+	local pathsArr = services.pathToTable(currentFilePath)
+
+	local cursor_pos = api.nvim_win_get_cursor(0)
+	local line_number = cursor_pos[1]
+	local column_number = cursor_pos[2]
+
+	local json = services.getHanoiJSON()
+
+	if json == nil then
+		services.writeToEmptyJSONFile()
+		json = services.getHanoiJSON()
+	end
+
+	local current = json.paths
+	for i, folder in ipairs(pathsArr) do
+		if current and current[folder] == nil then
+			print('There are no files to remove')
+			break
+		end
+
+		if i == #pathsArr then
+			if current[folder]['\\files'] == nil then
+				print('There are no files to remove!!')
+			else
+				local json_object = {}
+				local temp = current[folder]['\\files']
+				for key, value in ipairs(temp) do
+					if key ~= currentFileName then
+						json_object[key] = value
+					end
+				end
+				current[folder]['\\files'] = json_object
+				print(currentFileName .. ' removed!!')
+			end
+			break
+		end
+		current = current[folder]
+	end
+
+	local encoded_json = vim.json.encode(json) 
+
+	local path = vim.fn.expand('~/hanoi.json')
+	local final_file = io.open(path, 'w')
+	final_file:write(encoded_json)
+	final_file:close()
+end
 
 
 function open_projects_window()
@@ -269,19 +324,25 @@ function open_projects_window()
 
 	api.nvim_buf_set_option(hanoian.buffer, 'modifiable', false)
 	-- Set buffer to unmodifiable after adding information
-    -- vim.keymap.set('n', '<CR>', function() set_current_root() end, { buffer = true, silent = true })
     vim.keymap.set('n', '<CR>', function() set_current_root(data) end, { buffer = true, silent = true })
 	vim.keymap.set('n', '<ESC>', function() ui.close_window(hanoian.window, hanoian.buffer, old_win_info) data = nil end, { buffer = true, silent = true })
 	print('Open Hanoi.Projects Window!')
 end
 
 
+function open_notes()
+
+end
+
+
+
 return {
 	hanoi_toggle_file=hanoi_toggle_file,
 	open_window = open_window,
-	add_file = add_file,
-	set_project_root = set_project_root,
 	open_file = open_file,
+	add_file = add_file,
+	remove_file = remove_file,
 	open_projects_window = open_projects_window,
+	set_project_root = set_project_root,
 }
 

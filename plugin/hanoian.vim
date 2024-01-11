@@ -9,7 +9,9 @@ set cpo&vim
 
 hi HanoianCursorLine ctermbg=238 cterm=none
 
-command! Hanoi lua require'hanoian'.hanoi_toggle_file()
 command! HanoiFiles lua require'hanoian'.hanoi_toggle_file()
-command! HanoiRootsMenu lua require'hanoian'.open_roots_window()
+command! HanoiFilesAdd lua require'hanoian'.add_file()
+command! HanoiFilesRemove lua require'hanoian'.remove_file()
+
+command! HanoiProjects lua require'hanoian'. open_projects_window()
 

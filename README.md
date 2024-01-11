@@ -1,26 +1,33 @@
-# Hanoian - Optimized File Jumping Library
+# Hanoian - File Jumping Library
+Inspired by Harpoon by ThePrimeagen
 
-Inspired by Harpoon from ThePrimeagen
+
+## Features:
+**Navigate** between files within a project **(Hanoi.Files)**
+**Switch** projects easily **(Hanoi.Projects)**
+**Notes** for every files **(Hanoi.Notes)**
 
 
 ## Installation
 Use vim-plug or other alternatives to install hanoian
 
+```text
 Plug 'kietdo0602/vim-hanoian'
+```
 
 
+## Commands 
+':Hanoian.Files' - Toggle Hanoian.Files Menu
+':Hanoian.Files.Add' - Add current file
+':Hanoian.Files.Remove' - Remove current file
 
-## Guide 
-
-':Hanoian.Files' - toggle Hanoian.Files Menu Window
-':Hanoian.Files.Add' - Add current file to current project in cwd
-
-':Hanoian.Projects' - toggle Hanoian.Projects Menu
-':Hanoian.Projects.Add' - Add current cwd as a new Hanoian.Projects
+':Hanoian.Projects' - Toggle Hanoian.Projects Menu
+':Hanoian.Projects.Add' - Make current cwd as new Hanoian.Project
+':Hanoian.Projects.Remove' - Remove current cwd 
 
 ':Hanoian.Notes' - toggle Hanoian.Notes Menu
-':Hanoian.Notes.Edit' - Open note content of current file
-
+':Hanoian.Notes.Edit' - Open note notes of current file
+':Hanoian.Notes.Delete' - Delete all notes of current file
 
 
 ## Explanation
@@ -43,14 +50,14 @@ For each file added to the Hanoi.Files, you can add notes file to it.
 Edit the note of each file and save them.
 
 
-
 ## Cusomization
 To customize settings, change content of the settings key of json inside '~/hanoi.json'
 
 
-
 ## Implementation
-All contents are stored within hanoi.json file
+All settings are stored within hanoi-settings.json file
+All files the user are stored within hanoi.json file
+
 1. Allow storing files paths and jumping around
 2. Each file has a note - txt or json - txt now only
 

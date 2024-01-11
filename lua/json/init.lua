@@ -36,15 +36,15 @@ local function format_json(json_str)
     return formatted
 end
 
--- Example usage
-local json_data = '{"key": "value", "nested": {"inner_key": "inner_value"}}'
-local formatted, err = format_json(json_data)
+-- -- Example usage
+-- local json_data = '{"key": "value", "nested": {"inner_key": "inner_value"}}'
+-- local formatted, err = format_json(json_data)
 
-if err then
-    print("Error:", err)
-else
-    print(formatted)
-end
+-- if err then
+--     print("Error:", err)
+-- else
+--     print(formatted)
+-- end
 
 
 return {
